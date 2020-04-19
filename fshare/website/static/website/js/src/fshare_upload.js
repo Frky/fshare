@@ -104,7 +104,7 @@ $(document).ready(function () {
             return;
         }
         document.title = "FShare - Upload completed"
-        var href =  file.xhr.response.split("\n");
+        var href =  file.xhr.response.split("\n")[0];
         var key = $("input#id_key").val();
         if (key == undefined || key == " ")
             key = "";
