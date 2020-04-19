@@ -14,7 +14,6 @@ from django.utils.encoding import smart_str
 from django.contrib.auth.models import AnonymousUser
 
 from website.models import User, Permission, FSUser, RegistrationKey, File
-from website.renders import CustomRadioRenderer
 from website.expiration import compute_expiration_date
 from website.encryption import encrypt_file, encrypt_filename, generate_random_path, decrypt_filename
 
