@@ -40,11 +40,26 @@ you'll have.
 
 For now, it returns the ID of the uploaded file:
 ```
-$> curl -k -F "file[]=@test.txt" https://fshare.udtq.fr/upload
-IujVKphI8goB
+$> curl -k -F "file[]=@test.txt" -F "key=mysuperstrongkey" https://fshare.udtq.fr/upload
+https://fshare.udtq.fr/dl/dpNNRMuH15iO
+```
+In this example, file is now available at `https://fshare.udtq.fr/dl/dpNNRMuH15iO?key=mysuperstrongkey`.
+
+In order to create a full-fledged CLI client, you can add the following to your *.bash_aliases* file:
+```
+alias fshare='f(){ key=$(tr -cd [:alnum:] < /dev/urandom | fold -w 32 | head -n 1);\
+		link=$(curl -k -F "file[]=@$1" -F "key=$key" https://fshare.udtq.fr/upload);\
+		echo "$link""?key=$key"; unset -f f; }; f'`
 ```
 
-In this example, file is now available at `https://fshare.udtq.fr/dl/IujVKphI8goB`.
+You can then upload files with a single command:
+```
+$> fshare /tmp/test
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   389    0    39  100   350    107    966 --:--:-- --:--:-- --:--:--  1074
+https://fshare.udtq.fr/dl/qLQGuQdrJ3TO?key=C8GVC9QV88tJzWMPhG6ZYwxdImxmjWPM
+``` 
 
 ## Improvements to come
 
@@ -71,4 +86,3 @@ Due to performance caring and technical specificities, the encryption of files i
 the server. Even if the server does drop the key after this step, it is still a problem because it 
 knows at some point both the file and the key. We are working on a client-side encryption and 
 decryption to improve this point.
-
