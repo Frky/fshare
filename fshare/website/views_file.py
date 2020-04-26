@@ -20,13 +20,9 @@ from website.encryption import decrypt_file, decrypt_filename, generate_random_n
 
 
 def get_files_from_req(request):
-    print request
-    print "YOLO"
-    print request.FILES
     files = MultiValueDict()
     # If more than one file was uploaded
     if len(request.FILES.keys()) > 1:
-        print "ZIP"
         # Create a list containing all file names
         file_names = list()
         # Create a memory IO file
@@ -100,7 +96,6 @@ def download(request, fid):
             # Decrypt file list
             ctxt["flist"] = json.loads(decrypt_filename(f.file_list, val, f.iv).decode("utf-8"))
         except Exception as e:
-            print(e)
             ctxt["fname"] = f.title
             ctxt["flist"] = list()
     else:
@@ -170,22 +165,21 @@ def update(request, fid):
     f = get_object_or_404(File, id=fid)
     if request.user != f.owner:
         return HttpResponse("KO")
-    request.POST["max_dl"] = f.max_dl
-    request.POST["expiration_date"] = compute_ttl(f.expiration_date)
-    request.POST["key"] = f.real_key
+    post = {
+        'max_dl': f.max_dl,
+        'expiration_date': compute_ttl(f.expiration_date),
+        'key': f.real_key,
+    }
     form = UploadFileForm(
-            request.POST, 
+            post,
             files, 
             label_suffix='', 
             user=request.user, 
                 )
-    # initial={'max_dl': 0, 'expiration_date': None})
-    print form.fields
     if form.is_valid(request.user):
         form.save(request.user, file_names, f.id)
         return HttpResponse("OK")
     else:
-        print form.errors
         return HttpResponse("KO")
 
     
