@@ -40,10 +40,12 @@ you'll have.
 
 For now, it returns the ID of the uploaded file:
 ```
-$> curl -k -F "file[]=@test.txt" -F "key=mysuperstrongkey" https://fshare.udtq.fr/upload
+$ curl -k -F "file[]=@test.txt" -F "key=mysuperstrongkey" https://fshare.udtq.fr/upload
 https://fshare.udtq.fr/dl/dpNNRMuH15iO
 ```
 In this example, file is now available at `https://fshare.udtq.fr/dl/dpNNRMuH15iO?key=mysuperstrongkey`.
+
+#### One file command
 
 In order to create a full-fledged CLI client, you can add the following to your *.bash_aliases* file:
 ```
@@ -52,14 +54,42 @@ alias fshare='f(){ key=$(tr -cd [:alnum:] < /dev/urandom | fold -w 32 | head -n 
 		echo "$link""?key=$key"; unset -f f; }; f'`
 ```
 
+
 You can then upload files with a single command:
 ```
-$> fshare /tmp/test
+$ fshare /tmp/test
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100   389    0    39  100   350    107    966 --:--:-- --:--:-- --:--:--  1074
 https://fshare.udtq.fr/dl/qLQGuQdrJ3TO?key=C8GVC9QV88tJzWMPhG6ZYwxdImxmjWPM
 ``` 
+
+#### Multi file command
+
+If you want it to work for several files as well, you can opt for a more complex version:
+```
+function fshare() { 
+    files=()
+    i=0
+    for f in $@; do
+        files+=(-F "file[$i]=@$f");
+        i=$(( i+1 ))
+    done
+        key=$(tr -cd [:alnum:] < /dev/urandom | fold -w 32 | head -n 1)
+    link=$(curl -k "${files[@]}" -F "key=$key" https://fshare.udtq.fr/upload)
+        echo "$link""?key=$key"
+}
+```
+
+You wan now use `bash` wildcards for instance to upload multiple files at once:
+
+```
+$ fshare /tmp/test*
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   512  100    39  100   473    144   1751 --:--:-- --:--:-- --:--:--  1903
+https://fshare.udtq.fr/dl/hKId2K5jzcjE?key=hXFhX5lg9mwVitghSjFUOl36rHtNutVX
+```
 
 ## Improvements to come
 
