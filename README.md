@@ -75,9 +75,9 @@ function fshare() {
         files+=(-F "file[$i]=@$f");
         i=$(( i+1 ))
     done
-        key=$(tr -cd [:alnum:] < /dev/urandom | fold -w 32 | head -n 1)
+    key=$(tr -cd [:alnum:] < /dev/urandom | fold -w 32 | head -n 1)
     link=$(curl -k "${files[@]}" -F "key=$key" https://fshare.udtq.fr/upload)
-        echo "$link""?key=$key"
+    echo "$link""?key=$key"
 }
 ```
 
