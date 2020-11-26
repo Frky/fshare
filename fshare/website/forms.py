@@ -275,7 +275,6 @@ class UploadFileForm(forms.ModelForm):
         filename_safe = smart_str(uploaded_file.name, "utf-8")
         file_list_safe = smart_str(json.dumps(file_names), "utf-8")
 
-        print key
         if key is not None:
             iv, md5, filepath = encrypt_file(filename_safe, uploaded_file, folder, key)
             filename = encrypt_filename(filename_safe, key, iv)

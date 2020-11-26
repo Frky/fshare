@@ -26,7 +26,6 @@ def register(request):
         login(request, new_user)
         return redirect("index")
     else:
-        print reg_form.errors
         # Else we show a registration form
         ctxt["reg_form"] = reg_form
         return render(request, tpl, ctxt)

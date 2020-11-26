@@ -80,7 +80,7 @@ def decrypt_file(file_object, pwd):
     # Create a AES decryptor object
     dec = AES.new(key, AES.MODE_CBC, iv.encode("utf-8"))
     # Content of the deciphered file to be filled chunk by chunk
-    clear_file = tempfile.TemporaryFile(mode='w+')
+    clear_file = tempfile.TemporaryFile(mode='wb+')
     # Open source file
     with open(file_object.path, 'rb') as f:
         # Iteration on each chunk
