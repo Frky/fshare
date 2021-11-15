@@ -25,7 +25,10 @@ def index(request):
     """
     ctxt = dict()
     ctxt["title"] = "Index"
-    ctxt["size_limit"] = settings.FILE_MAX_SIZE_ANONYMOUS
+    if request.user.is_anonymous():
+        ctxt["size_limit"] = settings.FILE_MAX_SIZE_ANONYMOUS
+    else:
+        ctxt["size_limit"] = FSUser.objects.get(user=request.user).storage_left
     ctxt["day_limit"] = settings.FILE_MAX_DAYS_ANONYMOUS
     ctxt["dl_limit"] = settings.FILE_MAX_DL_ANONYMOUS
     ctxt["contact"] = settings.CONTACT
