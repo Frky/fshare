@@ -16,11 +16,11 @@ class Command(BaseCommand):
         
         user_class = [perm.name for perm in Permission.objects.all()]
         if len(options["pclass"]) == 0 or options["pclass"] not in user_class:
-            print(options["pclass"])
             print("You must specify a permission class among the following: ")
             for uc in user_class:
                 print(uc)
-            print("e.g.: ./manage.py generate_registration_key " + user_class[0])
+            if len(user_class) > 0:
+                print("e.g.: ./manage.py generate_registration_key " + user_class[0])
             return
 
         key = ''.join(random.choice(self.charset) for _ in range(50))
