@@ -5,11 +5,9 @@
 {% block bodyclass %}{% endblock %}
 
 {% block content %}
-    <div>
-        <form action="{% url "login" %}" method="post" class="" id="login-form">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <input type="submit" value="Go" />
-        </form>
-    </div>
+    <form action="{% url "login" %}" method="post" class="fshare-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Let me in" />
+    </form>
 {% endblock %}

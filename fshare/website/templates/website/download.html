@@ -13,11 +13,19 @@
 
 {% block content %}
 
-    <div class="file-info">
-        <p class="name"><label>File</label> <span class="value">{{ fname }}</span></p>
-        <p class="size"><label>Size</label> <span class="value">{{ f.size | human_size }}B</span></p>
-        <!-- <p class="checksum"><label>MD5 Checksum</label> <span class="value">{{ f.checksum }}</span></p> -->
-        <p></p>
+    <div class="fshare-info">
+        <p class="name">
+            <label>File</label>
+            <input readonly value="{{ fname }}" />
+        </p>
+        <p class="size">
+            <label>Size</label>
+            <input readonly value="{{ f.size | human_size }}B" />
+        </p>
+        <p class="checksum">
+            <label>MD5 Checksum</label>
+            <input readonly value="{{ f.checksum }}" />
+        </p>
     </div>
 
     {% if flist %}
@@ -31,11 +39,16 @@
         <p></p>
     </div>
     {% endif %}
-    <a href="{% url 'get' f.id %}{% if key %}?key={{ key }}{% endif %}">
-        <div class="download">
-            DOWNLOAD
-        </div>
-    </a>
+
+    <div class="file-button">
+        <a href="{% url 'get' f.id %}{% if key %}?key={{ key }}{% endif %}">
+            <div class="fshare-btn">
+                <span class="text">
+                    Download
+                </span>
+            </div>
+        </a>
+    </div>
 
 {% endblock %}
 

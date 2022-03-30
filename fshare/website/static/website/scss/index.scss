@@ -5,27 +5,17 @@
     display: none;
 }
 
+#dropzone {
+    width: 500px;
+}
+
 #id_file {
     display: none;
 }
 
 .idx-info {
-    width: 100%;
-    margin: auto;
-    margin-top: 80px;
-    span.glyphicon {
-        display: inline-block;
-        width: 40%;
-        text-align: right;
-        font-size: 4em;
-    }
-    ul {
-        display: inline-block;
-        width: 55%;
-        text-align: left;
-    }
-    .reg-info {
-        margin-top: 20px;
+    .text {
+        width: 100%;
         text-align: center;
     }
 }

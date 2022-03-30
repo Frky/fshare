@@ -28,26 +28,31 @@
 {% block contentclass %}{% endblock %}
 
 {% block content %}
-    <form id="upload-form" action="{% url "upload" %}" method="POST" enctype="multipart/form-data" class="upload-info" data-size="{% url "size_available" %}">
+    <form id="upload-form" action="{% url "upload" %}" method="POST" enctype="multipart/form-data" class="fshare-form upload-info" data-size="{% url "size_available" %}">
         {% csrf_token %}
         {{ form.as_p }}
-        <div id="dropzone" class="dropzone" action="{% url "upload" %}">
+        <div id="dropzone" class="dropzone fshare-btn" action="{% url "upload" %}">
             <div class="dz-message">Click or drop your file here</div>
         </div>
         <div id="upload-progression"></div>
     </form>
     {% if not user.is_authenticated or user.is_anonymous %}
-    <div class="idx-info">
-        <span class="glyphicon glyphicon-info-sign"></span>
-        <ul>
-            <li>Size limit is {{ size_limit | human_size }}B per file.</li>
-            <li>Files are deleted after {{ dl_limit }} download{% if dl_limit > 1 %}s{% endif %}.</li>
-            <li>Files not downloaded are deleted after {{ day_limit }} day{% if day_limit > 1 %}s{% endif %}.</li>
-        </ul>
-        <div class="reg-info">
-        To avoid these restrictions, ask for a registration key at <a href="mailto:{{ contact }}">{{ contact }}</a>.
-        </div>
+    <div class="fshare-info">
+        <div class=text>For anonymous users, the following limits apply for each upload:</div>
+        <p>
+            <label>Size</label>
+            <input readonly value="{{ size_limit | human_size }}B" />
+        </p>
+        <p>
+            <label>Max. number of downloads</label>
+            <input readonly value="{{ dl_limit }}" />
+        </p>
+        <p>
+            <label>Expiration date</label>
+            <input readonly value="+{{ day_limit }} day{% if day_limit > 1 %}s{% endif %}" />
+        </p>
     </div>
+        
     {% endif %}
 {% endblock %}
 
@@ -57,7 +62,7 @@
 
 {% block additional_html %}
     <div class="modal" id="link-modal" aria-labelledby="link-label" aria-hidden="true">
-        <h3>download link</h3>
+        <h3>Download link</h3>
         <p><input id="link-modal-input" type="text" value="" readonly /></p>
         <p><input id="show-key-btn" type="button" value="" class="active" /></p>
         <p><input id="cpy-link-btn" type="button" value="copy link" class="active" data-clipboard-target="#link-modal-input"/></p>

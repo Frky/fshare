@@ -11,9 +11,9 @@
         height: 3px;
         margin: auto;
         margin-top: 15px;
-        background-color: $very-light-color;
+        background-color: $alt-color;
         div {
-            background-color: $very-dark-color;
+            background-color: $alt-dark-color;
         }
     }
     p {
@@ -37,7 +37,7 @@
         color: white;
         text-align: center;
         &:hover {
-            color: $very-dark-color;
+            color: $alt-dark-color;
             background-color: white;
         }
     }

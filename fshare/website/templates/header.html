@@ -1,29 +1,9 @@
 {% block header %}
-    <div class="animated flipInX" id="title">
+    <div id="title">
         <a class="" href="{% url 'index' %}">
-            <div id="f">F</div><div id="share">Share</div>
+            FShare
         </a>
-        <div id="subtitle">
-            Private file sharing. Keep your data. Share your data. Be your own master.
-        </div>
     </div>
-    <script>
-        $("a", '#title').one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
-            $(this).removeClass("animated");
-            $(this).removeClass("pulse");
-            $(this).removeClass("fadeInLeft");
-        });
-        $("a", "#title").hover(function() {
-            $(this).addClass("pulse");
-            $(this).addClass("animated");
-            $(this).addClass("infinite");
-        }, function() {
-            $(this).removeClass("pulse");
-            $(this).removeClass("animated");
-            $(this).removeClass("infinite");
-        });
-
-    </script>
     <nav class="">
     {% block nav %}
         {% if user.is_authenticated %}

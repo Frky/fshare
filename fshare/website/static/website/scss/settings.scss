@@ -1,7 +1,11 @@
 
-@import "color/purple.scss";
 @import "font.scss";
 
 $title-font: "Existence";
-$main-font: "Helvetica Neue LT";
-$border-color: $dark-color;
+$main-font: "Helvetica Neue";
+
+$text-color: #000000;
+$background-color: #FFFFFF;
+$alt-color: #275efe;
+$alt-dark-color: #273c75;
+$border-color: $alt-color;

@@ -2,6 +2,7 @@
 @import "settings.scss";
 @import "form.scss";
 @import "user-menu.scss";
+@import "modal.scss";
 
 $doc-margin: 50px;
 
@@ -12,12 +13,15 @@ body {
     color: $text-color;
     width: 100%;
     margin: auto;
-    height: 100%;
+    height: 100vh;
     font-family: $main-font;
     font-weight: 200;
 
+    display: flex;
+    flex-direction: column;
+
     &.colored {
-        background-color: $dark-color;
+        background-color: $alt-dark-color;
         section {
             text-align: center;
         }
@@ -36,13 +40,13 @@ body {
         a, .link {
             color: white;
             &:hover {
-                color: $light-color;
+                color: $alt-color;
                 text-decoration: none;
                 cursor: pointer;
             }
         }
         header {
-            background-color: $dark-color;
+            background-color: $alt-dark-color;
             #title {
                 a {
                 }
@@ -59,9 +63,9 @@ body {
 
 .link, a {
     text-decoration: none;
-    color: $dark-color;
+    color: $alt-color;
     &:hover {
-        color: $very-light-color;
+        color: $alt-color;
         text-decoration: none;
         cursor: pointer;
     }
@@ -72,72 +76,37 @@ body {
 }
 
 header {
-    padding-top: 20px;
-    width: 100%;
-    margin: auto;
-    background-color: white;
-    font-family: $title-font;
-    text-align: center;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    &>div, &>nav {
+        padding: 10px 20px;
+    }
+
     #title {
-        border-style: solid;
-        border-width: 0px 0px 1px 0px;
-        padding-bottom: 50px;
-        width: 80%;
-        margin: auto;
         a {
-            font-size: 10em;
-            width: 100%;
-            color: black;
-            div {
-                display: inline-block;
-            }
-        }
-        #subtitle {
-            display: block;
-            color: $dark-color;
-            font-size: 1.6em;
+            font-weight: bold;
+            color: $text-color;
         }
     }
 
     nav {
-        $nav-size: 50px;
-        $nav-internal-padding: 2px;
-
-        position: fixed;
-        top: 0px;
-        right: 20px;
-        height: $nav-size;
-
-        padding-top: $nav-internal-padding;
-        padding-bottom: $nav-internal-padding;
-
-        background-color: rgba(0,0,0,0);
+        font-size: 0.8em;
+        display: flex;
+        justify-content: flex-end;
 
         a {
-            font-size: 0.8em;
             text-decoration: none;
-            display: inline-block;
-            float: right;
-            height: $nav-size - 2 * $nav-internal-padding;
-
-            line-height: $nav-size - 5px;
-            text-align: center;
-            text-overflow: ellipsis;
-
-            margin-left: 10px;
-            margin-right: 10px;
             text-align: center;
                 
-            border-style: solid;
-            border-width: 0px 0px 1px 0px;
-            border-color: rgba(0, 0, 0, 0);
-
-            &.active {
-                border-width: 0px 0px 1px 0px;
-            }
-
             &:hover {
-                border-color: $very-light-color;
+                color: $alt-dark-color;
             }
 
             div {
@@ -153,7 +122,17 @@ header {
 
 section {
 
-    padding: 50px;
+    flex-grow: 2;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    div, form {
+        margin-top: 30px;
+        margin-bottom: 30px;
+    }
 
     &.center {
         height: 500px;
@@ -174,18 +153,9 @@ section {
 }
     
 
-form, .file-info, .file-content {
-
+form, .file-info, .file-content, .idx-info {
     width: 100%;
-
     p, .content {
-        margin-top: 0px;
-        margin-bottom: 0px;
-
-        &:not(.content) {
-            height: 50px;
-        }
-        line-height: 50px;
 
         .radio {
             display: inline-block;
@@ -203,52 +173,17 @@ form, .file-info, .file-content {
         }
     }
 
-    p > label {
-        height: 100%;
-    }
-
     p > label, .content > label {
-        width: 45%;
-
-        display: inline-block;
-        text-align: right;
-
-        border-style: none;
-
-        margin-top: 0px;
-        margin-bottom: 0px;
-        
-        padding-right: 20px;
-
         &[for=file-public-switch_0] {
             float: left;
         }
     }
 
-    span.value, input, .radio, .content > .value {
-        margin-left: 20px;
-        width: 300px;
-    }
-
-    input {
-        width: 20%;
-        line-height: 30px;
-    }
-
     span.value {
-        color: $dark-color;
     }
     
     .helptext, .errorlist {
         display: none;
-    }
-
-    input[type=button], input[type=submit] {
-        width: 50%;
-        margin: auto;
-        margin-top: 50px;
-        display: block;
-        float: center;
     }
 }
 
@@ -268,29 +203,13 @@ form, .file-info, .file-content {
         p.content_file {
             line-height: 30px;
             height: 30px;
-            color: $dark-color;
+            color: $alt-dark-color;
         }
         p.show_content {
             color: gray;
             font-style: italic;
             cursor: pointer;
         }
-    }
-}
-
-.modal {
-    background-color: $dark-color;
-    text-align: center;
-
-    h3 {
-        color: white;
-        font-weight: 200;
-    }
-
-    input {
-        border-color: white;
-        background-color: $dark-color;
-        width: 70%;
     }
 }
 
@@ -305,54 +224,6 @@ form, .file-info, .file-content {
     color: white;
     text-align: center;
     line-height: 50px;
-}
-
-#dropzone, .download {
-    border-style: solid;
-    $dp_border: 3px;
-    border-width: $dp_border;
-    border-color: black;
-    border-radius: 0px;
-    border-color: black;
-    $dph: 135px;
-    $dpw: 500px;
-    height: $dph;
-    width: $dpw;
-    line-height: $dph - $dp_border;
-    text-align: center;
-    margin: auto;
-    background-color: white;
-    color: black;
-    position: relative;
-    moz-webkit-transition: width 0.7s, color 0.1s, height 0.7s, border-color 0.7s;
-        webkit-transition: width 0.7s, color 0.1s, height 0.7s, border-color 0.7s;
-               transition: width 0.7s, color 0.1s, height 0.7s, border-color 0.7s;
-    &:hover {
-        /*
-        background-color: $dark-color;
-        */
-        border-color: $dark-color;
-        cursor: pointer;
-        width: 1.5*$dpw;
-    }
-    &:after {
-        content: '';
-        width: $dpw - $dph; 
-        height: $dp_border;
-        background-color: white;
-        position: absolute;
-        bottom: -$dp_border;
-        right: -$dp_border;
-    }
-    &:before {
-        content: '';
-        width: $dpw - $dph; 
-        height: $dp_border;
-        background-color: white;
-        position: absolute;
-        top: -$dp_border;
-        left: -$dp_border;
-    }
 }
 
 /* MOBILE VERSION */
@@ -437,7 +308,7 @@ form, .file-info, .file-content {
 }
 
 .bar {
-    background-color: $dark-color; 
+    background-color: $alt-dark-color; 
 }
 
 

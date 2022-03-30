@@ -1,0 +1,30 @@
+
+@import "settings.scss";
+
+.modal {
+    background-color: $alt-dark-color;
+    text-align: center;
+
+    h3 {
+        color: white;
+        font-weight: bold;
+    }
+
+    input {
+        background-color: white;
+        color: $alt-dark-color;
+        padding: 10 15;
+        margin: 7px;
+
+        &:hover {
+            background-color: white;
+            color: $alt-dark-color;
+        }
+
+        &[type=text]#link-modal-input {
+            background-color: $alt-dark-color;
+            color: white;
+        }
+    }
+}
+

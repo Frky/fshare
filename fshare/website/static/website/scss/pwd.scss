@@ -3,14 +3,14 @@
 @import "form.scss";
 
 html, body {
-    background-color: $dark-color;
+    background-color: $alt-dark-color;
     text-align: center;
     font-family: $main-font;
 }
 
 
 input[type=text] {
-    background-color: $dark-color;
+    background-color: $alt-dark-color;
     display: block;
     margin: auto;
     border-color: white;
