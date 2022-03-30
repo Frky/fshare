@@ -31,8 +31,8 @@
     <form id="upload-form" action="{% url "upload" %}" method="POST" enctype="multipart/form-data" class="fshare-form upload-info" data-size="{% url "size_available" %}">
         {% csrf_token %}
         {{ form.as_p }}
-        <div id="dropzone" class="dropzone fshare-btn" action="{% url "upload" %}">
-            <div class="dz-message">Click or drop your file here</div>
+        <div id="dropzone" class="dropzone fshare-btn dz-message" action="{% url "upload" %}">
+            Click or drop your file here
         </div>
         <div id="upload-progression"></div>
     </form>
