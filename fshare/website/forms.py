@@ -212,7 +212,7 @@ class UploadFileForm(forms.ModelForm):
         # Init form with super constructor
         super(UploadFileForm, self).__init__(*args, **kwargs)
         # Case 1: user is anonymous (or not logged in) > remove unrelevant fields from form
-        if not user.is_authenticated() or user.is_anonymous():
+        if not user.is_authenticated or user.is_anonymous:
             # So no max dl field
             self.fields.pop("max_dl")
             # And no expiration date field
@@ -248,7 +248,7 @@ class UploadFileForm(forms.ModelForm):
         """
         if not super(UploadFileForm, self).is_valid():
             return False
-        if user.is_anonymous() or not user.is_authenticated():
+        if user.is_anonymous or not user.is_authenticated:
             return self.cleaned_data.get('file').size <= settings.FILE_MAX_SIZE_ANONYMOUS
         else:
             return user.fshare_user.can_upload(
@@ -258,7 +258,7 @@ class UploadFileForm(forms.ModelForm):
                                                 )
 
     def save(self, user, file_names, fid=None):
-        if user.is_anonymous() or not user.is_authenticated():
+        if user.is_anonymous or not user.is_authenticated:
             folder = settings.UPLOAD_DIRECTORY_ANONYMOUS
             max_dl = settings.FILE_MAX_DL_ANONYMOUS
             ttl = settings.FILE_MAX_DAYS_ANONYMOUS
@@ -312,14 +312,14 @@ class UploadFileForm(forms.ModelForm):
         # of content later on
         # !!! CONFIDENTIALITY IS NOT PRESERVED IN THIS CASE
         # (please use anonymous upload to ensure confidentiality)
-        if user.is_authenticated() and not user.is_anonymous():
+        if user.is_authenticated and not user.is_anonymous:
             real_key = key
         else:
             real_key = None
 
         if not new_file:
             new_file = File(
-                owner=user if not user.is_anonymous() else None,
+                owner=user if not user.is_anonymous else None,
                 title=filename,
                 private_label=self.cleaned_data.get('private_label', self.cleaned_data.get('title')),
                 description=self.cleaned_data.get('description'),

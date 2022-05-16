@@ -1,7 +1,7 @@
 import django.views.defaults
 from django.conf.urls import include, url
-from django.contrib.auth.views import login as django_login
-from django.contrib.auth.views import logout as django_logout
+from django.contrib.auth.views import LoginView as DjangoLoginView
+from django.contrib.auth.views import LogoutView as DjangoLogoutView
 from website import views
 
 urlpatterns = [
@@ -19,8 +19,8 @@ urlpatterns = [
 
     # Authentication views
     url(r'^register$', views.register, name="register"),
-    url(r'^login$', django_login, name="login"),
-    url(r'^logout$', django_logout, {'template_name': "registration/logout.html"}, name="logout"),
+    url(r'^login$', DjangoLoginView.as_view(template_name="registration/login.html"), name="login"),
+    url(r'^logout$', DjangoLogoutView.as_view(template_name="registration/logout.html"), name="logout"),
 
     # File downloading view
     url(r'^dl/(?P<fid>[-A-Za-z0-9_]+)$', views.download, name="download"),

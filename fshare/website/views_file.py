@@ -8,7 +8,7 @@ from zipfile import ZipFile
 from django.shortcuts import render, HttpResponse, get_object_or_404
 from django.contrib.auth.decorators import login_required 
 from django.core.files.uploadedfile import SimpleUploadedFile, InMemoryUploadedFile
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils.datastructures import MultiValueDict
 from django.utils.encoding import smart_str
 from django.views.decorators.csrf import csrf_exempt

@@ -15,7 +15,7 @@ class File(RandomPrimaryIdModel):
     """
 
     # Owner of the file
-    owner = models.ForeignKey(User, null=True, blank=True)
+    owner = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
     # File Description 
 
@@ -119,7 +119,7 @@ class RegistrationKey(models.Model):
     # Has it been revoked by admin ?
     revoked = models.BooleanField(default=False)
     # Corresponding permission
-    permission = models.ForeignKey(Permission, null=False, blank=False)
+    permission = models.ForeignKey(Permission, null=False, blank=False, on_delete=models.PROTECT)
 
 
 class FSUser(models.Model):
@@ -127,8 +127,8 @@ class FSUser(models.Model):
         Defines a user with specified permissions
 
     """
-    user = models.OneToOneField(User, related_name="fshare_user")
-    permission = models.ForeignKey(Permission, null=False, blank=False)
+    user = models.OneToOneField(User, related_name="fshare_user", on_delete=models.CASCADE)
+    permission = models.ForeignKey(Permission, null=False, blank=False, on_delete=models.PROTECT)
 
     def can_upload(self, size, max_dl, ttl):
         """

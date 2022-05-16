@@ -1,5 +1,7 @@
-Django==1.11.28
-PyYAML==5.1
+Django==2.2.24
 pycrypto==2.6.1
-pysha3==0.3
-uwsgi==2.0.15
+pysha3==1.0.2
+pytz==2022.1
+PyYAML==6.0
+sqlparse==0.4.2
+uWSGI==2.0.20

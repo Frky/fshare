@@ -25,7 +25,7 @@ def index(request):
     """
     ctxt = dict()
     ctxt["title"] = "Index"
-    if request.user.is_anonymous():
+    if request.user.is_anonymous:
         ctxt["size_limit"] = settings.FILE_MAX_SIZE_ANONYMOUS
     else:
         ctxt["size_limit"] = FSUser.objects.get(user=request.user).storage_left
@@ -84,7 +84,7 @@ def upload(request):
 
 
 def size_available(request):
-    if request.user.is_anonymous():
+    if request.user.is_anonymous:
         return HttpResponse(settings.FILE_MAX_SIZE_ANONYMOUS)
     else:
         return HttpResponse(FSUser.objects.get(user=request.user).storage_left)
