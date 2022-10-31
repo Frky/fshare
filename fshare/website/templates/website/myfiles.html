@@ -3,6 +3,7 @@
 {% load staticfiles %}
 
 {% block additional_style %}
+    <link type="text/css" rel="stylesheet" href="{% static 'website/generated/css/myfiles.css' %}" />    
     <link type="text/css" rel="stylesheet" href="{% static 'website/css/lib/jquery.modal.css' %}" />    
     <link type="text/css" rel="stylesheet" href="{% static 'website/css/lib/glyphicons.min.css' %}" />    
 {% endblock %}
@@ -29,9 +30,9 @@
                 <td class="date">expiration date</td>
                 <td class="update">change content</td>
                 <td class="gap"></td>
-                <td class="verysmall"></td>
+                <td class="verysmall">link</td>
                 <td class="gap"></td>
-                <td class="verysmall"></td>
+                <td class="verysmall">delete</td>
             </tr>
         </thead>
         <tbody>
@@ -58,7 +59,7 @@
                         {% endif %}
                     </td>
                     <td class="update">
-                        <form class="update-form" action="{{ URL_BASE}}{% url 'update' file.id %}" method="POST" enctype="multipart/form-data" class="upload-info" data-size="{% url "size_available" %}">
+                        <form class="update-form fshare-btn" action="{{ URL_BASE}}{% url 'update' file.id %}" method="POST" enctype="multipart/form-data" class="upload-info" data-size="{% url "size_available" %}">
                         {% csrf_token %}
                         <div id="dropzone-{{ file.id }}" class="dropzone" action="{{ URL_BASE }}{% url 'update' file.id %}">
                             <div class="dz-message">Click or drop your file here</div>
@@ -78,7 +79,7 @@
                     </td>
                     <td class="gap"></td>
                     <td class="verysmall">
-                        <div class="button delete-btn" data-href="{% url 'delete' file.id %}" data-csrf="{% csrf_token %}" data-fid="{{ file.id }}" ><span class="glyphicon glyphicon-remove"></span></div>
+                        <div class="button delete-btn" data-href="{{ URL_BASE}}{% url 'delete' file.id %}" data-csrf="{{ csrf_token }}" data-fid="{{ file.id }}"><span class="glyphicon glyphicon-remove"></span></div>
                     </td>
                 </tr>
             {% endfor %}
