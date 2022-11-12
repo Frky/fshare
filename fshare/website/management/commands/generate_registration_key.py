@@ -10,7 +10,7 @@ class Command(BaseCommand):
     charset = "azertyuiopqsdfghjklmwxcvbn1234567890AZERTYUIOPQSDFGHJKLMWXCVBN"
 
     def add_arguments(self, parser):
-        parser.add_argument('pclass', type=str)
+        parser.add_argument('pclass', type=str, default="")
 
     def handle(self, *args, **options):
         
