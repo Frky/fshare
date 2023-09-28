@@ -93,7 +93,7 @@ def download(request, fid):
             # Decrypt file name
             ctxt["fname"] = decrypt_filename(f.title, val, f.iv)
             # Decrypt file list
-            ctxt["flist"] = json.loads(decrypt_filename(f.file_list, val, f.iv).decode("utf-8"))
+            ctxt["flist"] = json.loads(decrypt_filename(f.file_list, val, f.iv))
         except Exception as e:
             ctxt["fname"] = f.title
             ctxt["flist"] = list()
@@ -101,7 +101,7 @@ def download(request, fid):
         ctxt["fname"] = f.title
         ctxt["flist"] = json.loads(f.file_list)
     # If only one file (not an archive), remove flist
-    if len(ctxt["flist"]) == 1 and ctxt["flist"][0] == ctxt["fname"].decode("utf-8"):
+    if len(ctxt["flist"]) == 1 and ctxt["flist"][0] == ctxt["fname"]:
         ctxt["flist"] = None
     else:
         # Sort the list of files

@@ -293,7 +293,7 @@ class UploadFileForm(forms.ModelForm):
             try:
                 new_file = File.objects.get(id=fid)
                 old_path = new_file.path
-                new_file.title = filename
+                new_file.title = uploaded_file.name
                 new_file.size = uploaded_file.size
                 new_file.file_list = file_list
                 new_file.path = filepath
