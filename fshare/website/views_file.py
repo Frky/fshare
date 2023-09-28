@@ -1,5 +1,4 @@
 import hashlib
-import sha3
 import mimetypes
 import json
 from io import BytesIO

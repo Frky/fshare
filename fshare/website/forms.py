@@ -1,5 +1,4 @@
 import hashlib
-import sha3
 import os
 import json
 from datetime import datetime, timedelta
@@ -272,16 +271,14 @@ class UploadFileForm(forms.ModelForm):
         key = self.cleaned_data.get('key') or None
 
         uploaded_file = self.cleaned_data.get('file')
-        filename_safe = smart_str(uploaded_file.name, "utf-8")
-        file_list_safe = smart_str(json.dumps(file_names), "utf-8")
 
         if key is not None:
-            iv, md5, filepath = encrypt_file(filename_safe, uploaded_file, folder, key)
-            filename = encrypt_filename(filename_safe, key, iv)
-            file_list = encrypt_filename(file_list_safe, key, iv)
+            iv, md5, filepath = encrypt_file(uploaded_file.name, uploaded_file, folder, key)
+            filename = encrypt_filename(uploaded_file.name, key, iv)
+            file_list = encrypt_filename(json.dumps(file_names), key, iv)
         else:
             filepath = generate_random_path(folder)
-            filename = filename_safe
+            filename = uploaded_file.name
             file_list = file_list_safe
             iv = None
             m = hashlib.md5()
@@ -320,10 +317,10 @@ class UploadFileForm(forms.ModelForm):
         if not new_file:
             new_file = File(
                 owner=user if not user.is_anonymous else None,
-                title=filename,
+                title=uploaded_file.name,
                 private_label=self.cleaned_data.get('private_label', self.cleaned_data.get('title')),
                 description=self.cleaned_data.get('description'),
-                file_list=file_list, 
+                file_list=json.dumps(file_names), 
                 path=filepath,
                 checksum=md5,
                 size=uploaded_file.size,

@@ -28,8 +28,8 @@ def encrypt_filename(filename, pwd, iv):
     # Create a AES encryptor object
     enc = AES.new(key, AES.MODE_CBC, iv)
     while len(filename) % 16 != 0:
-        filename += smart_str(' ', "utf-8")
-    return b64encode(enc.encrypt(filename))
+        filename += ' '
+    return b64encode(enc.encrypt(filename.encode("utf-8")))
 
 def decrypt_filename(filename_enc, pwd, iv):
     # Derive a key from "human" password and iv
@@ -40,7 +40,7 @@ def decrypt_filename(filename_enc, pwd, iv):
     filename = dec.decrypt(filename_enc)
     while filename.endswith(b' '):
         filename = filename[:-1]
-    return filename
+    return filename.decode("utf-8")
 
 def encrypt_file(filename, file_content, folder, pwd):
     # Generate a random IV
