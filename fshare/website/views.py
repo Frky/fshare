@@ -11,7 +11,6 @@ from django.views.decorators.csrf import csrf_exempt
 
 from website.models import Permission, FSUser, RegistrationKey, File
 from website.forms import RegisterForm, PermissionForm, UploadFileForm
-from website.encryption import decrypt_file, decrypt_filename, generate_random_name
 
 from website.views_file import download, get, update, delete, get_name, get_files_from_req
 from website.views_cockpit import cockpit, generate_registration_key, mark_key_distributed, revoke_key

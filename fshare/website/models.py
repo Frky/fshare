@@ -1,11 +1,51 @@
+from base64 import b64encode, b64decode
+from Crypto.Cipher import AES
+from Crypto.Protocol.KDF import PBKDF2
+import binascii
+import json
+import hashlib
 import os
-from random import randint
+import re
+import secrets
+import tempfile
 
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
 
 from website.random_primary import RandomPrimaryIdModel
+
+from website.utils import generate_random_path, generate_random_name
+
+CHUNK_SIZE = 24*1024
+
+def unescape(text):
+    regex = re.compile(b'\\\\(x[0-9a-f]{2}|[\'"abfnrt]|.|$)')
+    def replace(m):
+        b = m.group(1)
+        if len(b) == 0:
+            raise ValueError("Invalid character escape: '\\'.")
+        if b[0] == ord('x'):
+            v = int(b[1:], 16)
+        elif 48 <= b[0] <= 55:
+            v = int(b, 8)
+        elif b[0] == 34: return b'"'
+        elif b[0] == 39: return b"'"
+        elif b[0] == 92: return b'\\'
+        elif b[0] == 97: return b'\a'
+        elif b[0] == 98: return b'\b'
+        elif b[0] == 102: return b'\f'
+        elif b[0] == 110: return b'\n'
+        elif b[0] == 114: return b'\r'
+        elif b[0] == 116: return b'\t'
+        elif b[0] == ord("\\"): return b'\\'
+        else:
+            return b'?'
+        return bytes((v, ))
+    return regex.sub(replace, text.encode("latin1"))
+
+def is_b64(s):
+    return len(list(filter(lambda a: a in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890+/=', s))) == len(s)
 
 
 class File(RandomPrimaryIdModel):
@@ -64,7 +104,7 @@ class File(RandomPrimaryIdModel):
     # (to preserve confidentiality, please use anonymous uploads)
     real_key = models.CharField(max_length=512, blank=True, null=True, default=None)
     # Initialization Vector for AES encryption
-    iv = models.CharField(max_length=16, blank=True, null=True)
+    iv = models.CharField(max_length=32, blank=True, null=True)
     # Password to protect download 
     # NB. This password is NOT hashed 
     # To be removed in the future
@@ -76,6 +116,181 @@ class File(RandomPrimaryIdModel):
     max_dl = models.IntegerField(default=1)
     # Expiration date
     expiration_date = models.DateTimeField(default=None, blank=True, null=True)
+
+    def set_name(self, filename, pwd=""):
+        if not self.iv:
+            # Generate a random IV
+            self.iv = b64encode(secrets.token_bytes(16)).decode("utf-8")
+        iv = b64decode(self.iv.encode("utf-8"))
+        # Derive a key from "human" password
+        key = PBKDF2(pwd, iv)
+        # Create a AES encryptor object
+        enc = AES.new(key, AES.MODE_CBC, iv)
+        filename = filename.encode("utf-8")
+        while len(filename) % 16 != 0:
+            filename += b' '
+        c = enc.encrypt(filename) 
+        self.title = b64encode(
+                c
+            ).decode("utf-8")
+
+    def get_name(self, pwd=""):
+        if is_b64(self.iv):
+            iv = b64decode(self.iv.encode("utf-8"))
+        elif self.iv[:2] == "b'":
+            iv = unescape(self.iv[2:-1])
+        else:
+            iv = self.iv.encode()
+        # Derive a key from "human" password and iv
+        key = PBKDF2(pwd, iv)
+        # Create a AES decryptor object
+        dec = AES.new(key, AES.MODE_CBC, iv)
+        try:
+            if self.title[:2] == "b'":
+                title = self.title[2:-1]
+            else:
+                title = self.title
+            if is_b64(title):
+                title = b64decode(title.encode("utf-8"))
+            else:
+                title = title.encode("utf-8")
+            filename = dec.decrypt(title)
+            while filename.endswith(b' '):
+                filename = filename[:-1]
+            return filename.decode("utf-8")
+        except UnicodeDecodeError:
+            key = PBKDF2(pwd, iv)
+            dec = AES.new(key, AES.MODE_CBC, iv)
+            filename = dec.decrypt(b64decode(self.title.encode("utf-8"))[2:] + b'aa')
+            return filename
+        except (binascii.Error, ValueError):
+            if is_b64(self.title):
+                return b64decode(self.title)
+            elif is_b64(self.title[2:-1]):
+                return b64decode(self.title[2:-1])
+            else:
+                return self.title.encode("utf-8")
+
+    def set_list(self, flist, pwd=""):
+        if not self.iv:
+            # Generate a random IV
+            self.iv = b64encode(secrets.token_bytes(16)).decode("utf-8")
+        iv = b64decode(self.iv.encode("utf-8"))
+        # Derive a key from "human" password
+        key = PBKDF2(pwd, iv)
+        # Create a AES encryptor object
+        enc = AES.new(key, AES.MODE_CBC, iv)
+        content = json.dumps(flist)
+        while len(content) % 16 != 0:
+            content += ' '
+        self.file_list = b64encode(
+                enc.encrypt(content.encode("utf-8"))
+            ).decode("utf-8")
+
+    def get_list(self, pwd=""):
+        """
+        iv = b64decode(self.iv.encode("utf-8"))
+        # Derive a key from "human" password and iv
+        key = PBKDF2(pwd, iv)
+        # Create a AES decryptor object
+        dec = AES.new(key, AES.MODE_CBC, iv)
+        flist = dec.decrypt(b64decode(self.file_list.encode("utf-8")))
+        while flist.endswith(b' '):
+            flist = flist[:-1]
+        return json.loads(flist.decode("utf-8"))
+        """
+        if is_b64(self.iv):
+            iv = b64decode(self.iv.encode("utf-8"))
+        elif self.iv[:2] == "b'":
+            iv = unescape(self.iv[2:-1])
+        else:
+            iv = self.iv.encode()
+        # Derive a key from "human" password and iv
+        key = PBKDF2(pwd, iv)
+        # Create a AES decryptor object
+        dec = AES.new(key, AES.MODE_CBC, iv)
+        try:
+            if self.file_list[:2] == "b'":
+                file_list = self.file_list[2:-1]
+            else:
+                file_list = self.file_list
+            if is_b64(file_list):
+                file_list = b64decode(file_list.encode("utf-8"))
+            else:
+                file_list = file_list.encode("utf-8")
+            filelist = dec.decrypt(file_list)
+            while filelist.endswith(b' '):
+                filelist = filelist[:-1]
+            return json.loads(filelist.decode("utf-8"))
+        except UnicodeDecodeError:
+            key = PBKDF2(pwd, iv)
+            dec = AES.new(key, AES.MODE_CBC, iv)
+            filelist = dec.decrypt(b64decode(self.file_list.encode("utf-8"))[2:] + b'aa')
+            return filelist
+        except (binascii.Error, ValueError):
+            if is_b64(self.file_list):
+                return b64decode(self.file_list)
+            elif is_b64(self.file_list[2:-1]):
+                return b64decode(self.file_list[2:-1])
+            else:
+                return self.file_list.encode("utf-8")
+
+    def set_content(self, content, pwd=""):
+        if not self.iv:
+            # Generate a random IV
+            self.iv = b64encode(secrets.token_bytes(16)).decode("utf-8")
+        iv = b64decode(self.iv.encode("utf-8"))
+        # Derive a key from "human" password
+        key = PBKDF2(pwd, iv)
+        # Create a AES encryptor object
+        enc = AES.new(key, AES.MODE_CBC, iv)
+        # Create a MD5 hasher for file checksum
+        m = hashlib.md5()
+        # Open destination for write
+        with open(self.path, 'wb+') as dest:
+            # Iteration chunk by chunk
+            while True:
+                # Getting bytes from file
+                chunk = content.read(CHUNK_SIZE)
+                # Update md5
+                m.update(chunk)
+                # Detect EOF
+                if len(chunk) == 0:
+                    break
+                # Add padding if needed
+                elif len(chunk) % 16 != 0:
+                    chunk += b' ' * (16 - len(chunk) % 16)
+                # Write to destination encrypted chunk
+                dest.write(enc.encrypt(chunk))
+        self.checksum = m.hexdigest()
+
+    def get_content(self, pwd=""):
+        if is_b64(self.iv):
+            iv = b64decode(self.iv.encode("utf-8"))
+        elif self.iv[:2] == "b'":
+            iv = unescape(self.iv[2:-1])
+        else:
+            iv = self.iv.encode()
+        # Derive a key from "human" password and iv
+        key = PBKDF2(pwd, iv)
+        # Create a AES decryptor object
+        dec = AES.new(key, AES.MODE_CBC, iv)
+        clear_file = tempfile.TemporaryFile(mode='wb+')
+        with open(self.path, 'rb') as f:
+            # Iteration on each chunk
+            i = 0
+            while True:
+                i += 1
+                # Getting bytes from file
+                chunk = f.read(CHUNK_SIZE)
+                # Detect EOF
+                if len(chunk) == 0:
+                    break
+                # Decrypt chunk
+                clear_file.write(dec.decrypt(chunk))
+        clear_file.seek(0)
+        # Return deciphered content truncated by the padding
+        return clear_file
 
     def delete(self):
         try:

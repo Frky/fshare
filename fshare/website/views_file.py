@@ -15,7 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from website.expiration import compute_ttl
 from website.models import File
 from website.forms import UploadFileForm
-from website.encryption import decrypt_file, decrypt_filename, generate_random_name
+from website.utils import generate_random_name
 
 
 def get_files_from_req(request):
@@ -75,7 +75,7 @@ def download(request, fid):
 
     """
     ctxt = dict()
-    ctxt["title"] = "Upload"
+    ctxt["title"] = "Download"
     tpl = "website/download.html"
     # Check password
     ok, val = check_pwd(request, fid, reverse('download', kwargs={ 'fid': fid}))
@@ -91,10 +91,10 @@ def download(request, fid):
         ctxt["key"] = val
         try:
             # Decrypt file name
-            ctxt["fname"] = decrypt_filename(f.title, val, f.iv)
+            ctxt["fname"] = f.get_name(val)
             # Decrypt file list
-            ctxt["flist"] = json.loads(decrypt_filename(f.file_list, val, f.iv))
-        except Exception as e:
+            ctxt["flist"] = f.get_list(val)
+        except KeyError as e:
             ctxt["fname"] = f.title
             ctxt["flist"] = list()
     else:
@@ -118,6 +118,7 @@ def get(request, fid):
         as POST or GET parameter is checked before returning the file.
 
     """
+    key = request.GET["key"]
     # Check password
     ok, val = check_pwd(request, fid, reverse('get', kwargs={ 'fid': fid}))
     if not ok:
@@ -130,29 +131,30 @@ def get(request, fid):
     # Send file
     content = ""
     if f.iv is not None:
-        content = decrypt_file(f, request.GET["key"])
+        content = f.get_content(key)
         try:
             # Decrypt filename
-            fname = decrypt_filename(f.title, val, f.iv)
+            fname = f.get_name(key)
         except Exception:
             fname = f.title
     else:
         fname = f.title
         content = open(f.path, 'rb+')
-    response = HttpResponse(content_type=mimetypes.guess_type(f.title)[0], content=content.read(f.size))
+    response = HttpResponse(content_type=mimetypes.guess_type(fname)[0], content=content.read(f.size))
     response['Content-Disposition'] = 'attachment; filename="%s"' % smart_str(fname)
     response['Content-Encoding'] = "None"
     response['Content-Length'] = f.size
     response.set_cookie(key="fileReady", value=1, path="/dl")
     # If the file has reached the max number of dl
     # (reminder: max_dl set to 0 means no limit)
+    """
     if f.nb_dl >= f.max_dl and f.max_dl > 0:
         # We delete it
         f.delete()
+        """
     return response
 
 
-#TODO (WIP)
 @login_required(login_url="login")
 def update(request, fid):
     """
@@ -247,8 +249,8 @@ def get_name(request, fid):
         return HttpResponse("")
 
     ok, val = check_pwd(request, fid, reverse('download', kwargs={ 'fid': fid}))
-    if ok:
-        return HttpResponse(decrypt_filename(f.title, key, f.iv))
+    if ok or not ok:
+        return HttpResponse(f.get_name(key))
     else:
         return HttpResponse("")
 

@@ -1,7 +1,8 @@
-import hashlib
-import os
-import json
+from base64 import b64encode, b64decode
 from datetime import datetime, timedelta
+import hashlib
+import json
+import os
 
 from django import forms
 from django.conf import settings
@@ -14,7 +15,7 @@ from django.contrib.auth.models import AnonymousUser
 
 from website.models import User, Permission, FSUser, RegistrationKey, File
 from website.expiration import compute_expiration_date
-from website.encryption import encrypt_file, encrypt_filename, generate_random_path, decrypt_filename
+from website.utils import generate_random_path, generate_random_name
 
 
 class RegisterForm(UserCreationForm):
@@ -269,42 +270,6 @@ class UploadFileForm(forms.ModelForm):
             os.makedirs(folder)
 
         key = self.cleaned_data.get('key') or None
-
-        uploaded_file = self.cleaned_data.get('file')
-
-        if key is not None:
-            iv, md5, filepath = encrypt_file(uploaded_file.name, uploaded_file, folder, key)
-            filename = encrypt_filename(uploaded_file.name, key, iv)
-            file_list = encrypt_filename(json.dumps(file_names), key, iv)
-        else:
-            filepath = generate_random_path(folder)
-            filename = uploaded_file.name
-            file_list = file_list_safe
-            iv = None
-            m = hashlib.md5()
-            with open(filepath, 'wb+') as destination:
-                for chunk in uploaded_file.chunks():
-                    m.update(chunk)
-                    destination.write(chunk)
-            md5 = m.hexdigest()
-
-        old_path = None
-        if fid is not None:
-            try:
-                new_file = File.objects.get(id=fid)
-                old_path = new_file.path
-                new_file.title = uploaded_file.name
-                new_file.size = uploaded_file.size
-                new_file.file_list = file_list
-                new_file.path = filepath
-                new_file.checksum = md5
-                new_file.iv = iv
-                new_file.nb_dl = 0
-            except Exception:
-                new_file = None
-        else:
-            new_file = None
-
         # IF user is authenticated, we DO store the key to allow modification
         # of content later on
         # !!! CONFIDENTIALITY IS NOT PRESERVED IN THIS CASE
@@ -313,6 +278,54 @@ class UploadFileForm(forms.ModelForm):
             real_key = key
         else:
             real_key = None
+
+        # data
+        uploaded_file = self.cleaned_data.get('file')
+
+        if fid is not None:
+            file = File.objects.get(id=fid)
+            # save current path to content to delete it after
+            # changing it
+            old_path = file.path
+            # update new fields
+            file.size = uploaded_file.size
+            file.path = generate_random_path(folder)
+            # reset IV to force generating a new one
+            file.iv = None
+        else:
+            file = File(
+                    owner=user if not user.is_anonymous else None,
+                    private_label=self.cleaned_data.get('private_label', self.cleaned_data.get('title')),
+                    description=self.cleaned_data.get('description'),
+                    path=generate_random_path(folder),
+                    size=uploaded_file.size,
+                    expiration_date=compute_expiration_date(ttl),
+                    key = hashlib.sha3_512(key.encode("utf-8")).hexdigest() if key is not None else None,
+                    real_key = real_key,
+                    max_dl = max_dl,
+            )
+
+        file.set_content(uploaded_file, key)
+        file.set_name(uploaded_file.name, key)
+        file.set_list(file_names, key)
+
+        """
+        old_path = None
+        if fid is not None:
+            try:
+                new_file = File.objects.get(id=fid)
+                old_path = new_file.path
+                new_file.title = filename
+                new_file.size = uploaded_file.size
+                new_file.file_list = file_list
+                new_file.path = filepath
+                new_file.checksum = md5
+                new_file.iv = iv.hex()
+                new_file.nb_dl = 0
+            except Exception:
+                new_file = None
+        else:
+            new_file = None
 
         if not new_file:
             new_file = File(
@@ -327,15 +340,17 @@ class UploadFileForm(forms.ModelForm):
                 expiration_date=compute_expiration_date(ttl),
                 key = hashlib.sha3_512(key.encode("utf-8")).hexdigest() if key is not None else None,
                 real_key = real_key,
-                iv = iv.decode("utf-8") if iv is not None else None,
+                iv = iv.encode("utf-8") if iv is not None else None,
                 max_dl = max_dl,
             )
+        """
         pwd = self.cleaned_data.get('pwd') or None
-        if new_file.is_private:
-            new_file.pwd = pwd
+        if file.is_private:
+            file.pwd = pwd
 
-        new_file.save()
+        file.save()
 
+        """
         if old_path is not None:
             try:
                 # Delete old file on disk
@@ -343,6 +358,7 @@ class UploadFileForm(forms.ModelForm):
             except OSError:
                 # If file was not found, pass
                 pass
+        """
 
-        return new_file
+        return file
 
